@@ -1,6 +1,6 @@
 ﻿using MetricWebApi_Manager.Models.Metrics;
 
-namespace MetricWebApi_Manager.Models.Requests
+namespace MetricWebApi_Manager.Models.Responses
 {
     public class CpuMetricsResponse
     {

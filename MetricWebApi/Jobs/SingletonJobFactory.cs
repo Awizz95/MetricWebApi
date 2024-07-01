@@ -14,7 +14,9 @@ namespace MetricWebApi.Jobs
 
         public IJob NewJob(TriggerFiredBundle bundle, IScheduler scheduler)
         {
-            return _serviceProvider.GetRequiredService(bundle.JobDetail.JobType) as IJob;
+            IJob? job = _serviceProvider.GetRequiredService(bundle.JobDetail.JobType) as IJob;
+
+            return job;
         }
 
         public void ReturnJob(IJob job) { }

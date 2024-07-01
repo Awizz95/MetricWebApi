@@ -1,8 +1,9 @@
 ﻿using AutoMapper;
 using MetricWebApi.Models.Dto;
 using MetricWebApi.Services.Interfaces;
-using MetricWebApi_Agent.Models;
 using MetricWebApi_Agent.Models.Dto;
+using MetricWebApi_Agent.Models.Metrics;
+using MetricWebApi_Agent.Models.Responses;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MetricWebApi.Controllers
@@ -23,8 +24,9 @@ namespace MetricWebApi.Controllers
         [HttpGet("all")]
         public IActionResult GetAllRAMMetrics()
         {
-            var metrics = _ramMetricRepository.GetAll();
-            var response = new RAMMetricResponse()
+            IList<RAMMetric> metrics = _ramMetricRepository.GetAll();
+
+            RAMMetricResponse response = new RAMMetricResponse()
             {
                 Metrics = new List<RAMMetricDto>()
             };
@@ -38,8 +40,9 @@ namespace MetricWebApi.Controllers
         [HttpGet("from/{fromTime}/to/{toTime}")]
         public IActionResult GetRAMMetricsForThePeriod([FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
         {
-            var metrics = _ramMetricRepository.GetByTimePeriod(fromTime, toTime);
-            var response = new RAMMetricResponse()
+            IList<RAMMetric> metrics = _ramMetricRepository.GetByTimePeriod(fromTime, toTime);
+
+            RAMMetricResponse response = new RAMMetricResponse()
             {
                 Metrics = new List<RAMMetricDto>()
             };

@@ -9,7 +9,7 @@ namespace MetricWebApi_Agent.Jobs
     {
 
         private readonly IRAMMetricRepository _ramMetricsRepository;
-        private PerformanceCounter _ramCounter;
+        private readonly PerformanceCounter _ramCounter;
 
         public RAMMetricJob(IRAMMetricRepository ramMetricsRepository)
         {
@@ -20,13 +20,14 @@ namespace MetricWebApi_Agent.Jobs
         public Task Execute(IJobExecutionContext context)
         {
             float ramValue = _ramCounter.NextValue();
-            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            TimeSpan time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
             _ramMetricsRepository.Create(new RAMMetric
             {
                 Time = time.TotalSeconds,
                 Value = (long)ramValue
             });
+
             return Task.CompletedTask;
         }
     }

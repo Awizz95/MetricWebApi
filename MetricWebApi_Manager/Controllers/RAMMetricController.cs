@@ -1,5 +1,6 @@
 ﻿using MetricWebApi_Manager.Models.Request;
 using MetricWebApi_Manager.Models.Requests;
+using MetricWebApi_Manager.Models.Responses;
 using MetricWebApi_Manager.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,7 +21,7 @@ namespace MetricWebApi_Manager.Controllers
 
             [HttpGet("getRAMMetricsFromAgent")]
             [ProducesResponseType(typeof(RAMMetricsResponse), StatusCodes.Status200OK)] 
-            public IActionResult GetMetricsFromAgentV2([FromBody] RAMMetricsRequest request)
+            public IActionResult GetMetricsFromRequest([FromBody] RAMMetricsRequest request)
             {
                 RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
                 {
@@ -28,11 +29,12 @@ namespace MetricWebApi_Manager.Controllers
                     FromTime = request.FromTime,
                     ToTime = request.ToTime
                 });
+
                 return Ok(response);
             }
 
             [HttpGet("agent/{agentId}/from/{fromTime}/to/{toTime}")]
-            public IActionResult GetMetricsFromAgentV1([FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
+            public IActionResult GetMetricsFromRoute([FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
             {
                 RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
                 {
@@ -40,6 +42,7 @@ namespace MetricWebApi_Manager.Controllers
                     FromTime = fromTime,
                     ToTime = toTime
                 });
+
                 return Ok(response);
             }
         }

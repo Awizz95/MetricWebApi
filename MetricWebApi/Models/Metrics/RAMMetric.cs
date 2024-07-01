@@ -1,4 +1,4 @@
-﻿namespace MetricWebApi.Models
+﻿namespace MetricWebApi_Agent.Models.Metrics
 {
     public class RAMMetric
     {

@@ -25,8 +25,8 @@ namespace MetricWebApi.Jobs
 
             foreach (var jobSchedule in _jobSchedules)
             {
-                var job = CreateJobDetail(jobSchedule);
-                var trigger = CreateTrigger(jobSchedule);
+                IJobDetail job = CreateJobDetail(jobSchedule);
+                ITrigger trigger = CreateTrigger(jobSchedule);
                 await Scheduler.ScheduleJob(job, trigger, cancellationToken);
             }
 
@@ -40,7 +40,7 @@ namespace MetricWebApi.Jobs
 
         private static IJobDetail CreateJobDetail(JobSchedule schedule)
         {
-            var jobType = schedule.JobType;
+            Type jobType = schedule.JobType;
 
             return JobBuilder
                 .Create(jobType)

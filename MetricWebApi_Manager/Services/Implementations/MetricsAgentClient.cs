@@ -3,6 +3,7 @@ using MetricWebApi_Manager.Models.Requests;
 using MetricWebApi_Manager.Models;
 using MetricWebApi_Manager.Services.Interfaces;
 using Newtonsoft.Json;
+using MetricWebApi_Manager.Models.Responses;
 
 namespace MetricWebApi_Manager.Services.Implementations
 {
@@ -20,27 +21,28 @@ namespace MetricWebApi_Manager.Services.Implementations
             _agentPool = agentPool;
         }
 
-        public CpuMetricsResponse GetCpuMetrics(CpuMetricsRequest cpuMetricsRequest)
+        public CpuMetricsResponse GetCpuMetrics(CpuMetricsRequest request)
         {
             try
             {
-                AgentInfo? agentInfo = _agentPool.Agents.Values.FirstOrDefault(agent => agent.AgentId == cpuMetricsRequest.AgentId);
+                AgentInfo agentInfo = _agentPool.Agents.Values.FirstOrDefault(agent => agent.AgentId == request.AgentId)!;
 
-                if (agentInfo == null)
-                    throw new Exception($"AgentId #{cpuMetricsRequest.AgentId} not found.");
+                Uri agentAddress = agentInfo.AgentAddress;
+                string fromTime = request.FromTime.ToString("dd\\.hh\\:mm\\:ss");
+                string toTime = request.ToTime.ToString("dd\\.hh\\:mm\\:ss");
 
-                string requestQuery =
-                    $"{agentInfo.AgentAddress}api/metrics/cpu/from/{cpuMetricsRequest.FromTime.ToString("dd\\.hh\\:mm\\:ss")}/to/{cpuMetricsRequest.ToTime.ToString("dd\\.hh\\:mm\\:ss")}";
+                string requestQuery = $"{agentAddress}api/metrics/cpu/from/{fromTime}/to/{toTime}";
 
                 HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestQuery);
                 httpRequestMessage.Headers.Add("Accept", "application/json");
-                HttpResponseMessage response = _httpClient.SendAsync(httpRequestMessage).Result;
+                HttpResponseMessage response = _httpClient.SendAsync(httpRequestMessage).Result;  //отправка запроса агенту
 
                 if (response.IsSuccessStatusCode)
                 {
                     string responseStr = response.Content.ReadAsStringAsync().Result;
                     CpuMetricsResponse cpuMetricsResponse = (CpuMetricsResponse) JsonConvert.DeserializeObject(responseStr, typeof(CpuMetricsResponse));
-                    cpuMetricsResponse.AgentId = cpuMetricsRequest.AgentId;
+                    cpuMetricsResponse.AgentId = request.AgentId;
+
                     return cpuMetricsResponse;
                 }
             }
@@ -49,7 +51,7 @@ namespace MetricWebApi_Manager.Services.Implementations
                 _logger.LogError(ex.Message);
             }
 
-            throw new Exception("Произошла ошибка запроса");
+            throw new InvalidOperationException("Произошла ошибка запроса");
         }
 
         public RAMMetricsResponse GetRAMMetrics(RAMMetricsRequest ramMetricsRequest)
@@ -58,7 +60,7 @@ namespace MetricWebApi_Manager.Services.Implementations
             {
                 AgentInfo? agentInfo = _agentPool.Agents.Values.FirstOrDefault(agent => agent.AgentId == ramMetricsRequest.AgentId);
 
-                if (agentInfo == null)
+                if (agentInfo is null)
                     throw new Exception($"AgentId #{ramMetricsRequest.AgentId} not found.");
 
                 string requestQuery =
@@ -73,6 +75,7 @@ namespace MetricWebApi_Manager.Services.Implementations
                     string responseStr = response.Content.ReadAsStringAsync().Result;
                     RAMMetricsResponse ramMetricsResponse = (RAMMetricsResponse)JsonConvert.DeserializeObject(responseStr, typeof(RAMMetricsResponse));
                     ramMetricsResponse.AgentId = ramMetricsRequest.AgentId;
+
                     return ramMetricsResponse;
                 }
             }
@@ -82,6 +85,20 @@ namespace MetricWebApi_Manager.Services.Implementations
             }
 
             throw new Exception("Произошла ошибка запроса");
+        }
+
+        public bool IsAgentRegisteredAndAvailable(int agentId)
+        {
+            bool isAgentRegistered = _agentPool.Agents.Keys.Contains(agentId);
+
+            if (isAgentRegistered)
+            {
+                bool isAgentAvailable = _agentPool.Agents[agentId].Enable;
+
+                return isAgentAvailable;
+            }
+
+            return false;
         }
     }
 }

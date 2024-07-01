@@ -2,23 +2,23 @@
 using MetricWebApi;
 using Microsoft.Extensions.Options;
 using System.Data.SQLite;
-using MetricWebApi.Models;
 using Dapper;
+using MetricWebApi_Agent.Models.Metrics;
 
 namespace MetricWebApi_Agent.Services.Implementations
 {
     public class RAMMetricRepository : IRAMMetricRepository
     {
-        private readonly IOptions<DBOptions> _databaseOptions;
+        private readonly IConfiguration _configuration;
 
-        public RAMMetricRepository(IOptions<DBOptions> databaseOptions)
+        public RAMMetricRepository(IConfiguration configuration)
         {
-            _databaseOptions = databaseOptions;
+            _configuration = configuration;
         }
 
         public void Create(RAMMetric item)
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             connection.Execute("INSERT INTO rammetrics(value, time) VALUES(@value, @time)",
                 new
@@ -30,14 +30,14 @@ namespace MetricWebApi_Agent.Services.Implementations
 
         public void Delete(int id)
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             connection.Execute("DELETE FROM rammetrics WHERE id=@id", new { id = id });
         }
 
         public void Update(RAMMetric item)
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             connection.Execute("UPDATE rammetrics SET value = @value, time = @time WHERE id = @id",
                 new
@@ -50,7 +50,7 @@ namespace MetricWebApi_Agent.Services.Implementations
 
         public IList<RAMMetric> GetAll()
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             List<RAMMetric> metrics = connection.Query<RAMMetric>("SELECT * FROM rammetrics").ToList();
 
@@ -59,7 +59,7 @@ namespace MetricWebApi_Agent.Services.Implementations
 
         public RAMMetric GetById(int id)
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             RAMMetric metric = connection.QuerySingle<RAMMetric>("SELECT Id, Time, Value FROM rammetrics WHERE id = @id",
                 new { id = id });
@@ -69,7 +69,7 @@ namespace MetricWebApi_Agent.Services.Implementations
 
         public IList<RAMMetric> GetByTimePeriod(TimeSpan timeFrom, TimeSpan timeTo)
         {
-            using var connection = new SQLiteConnection(_databaseOptions.Value.connectionString);
+            using SQLiteConnection connection = new SQLiteConnection(_configuration.GetConnectionString("Default"));
 
             List<RAMMetric> metrics = connection.Query<RAMMetric>($"SELECT * FROM rammetrics where time >= @timeFrom and time <= @timeTo",
                 new { timeFrom = timeFrom.TotalSeconds, timeTo = timeTo.TotalSeconds }).ToList();

@@ -1,7 +1,6 @@
 ﻿using MetricWebApi_Manager.Models;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
-using System.Reflection;
 
 namespace MetricWebApi_Manager.Controllers
 {
@@ -10,7 +9,7 @@ namespace MetricWebApi_Manager.Controllers
     [SwaggerTag("Взаимодействие с агентами")]
     public class AgentsController : ControllerBase
     {
-        private AgentPool _agentPool;
+        private readonly AgentPool _agentPool;
 
         public AgentsController(AgentPool agentPool)
         {
@@ -23,10 +22,15 @@ namespace MetricWebApi_Manager.Controllers
 
         public IActionResult RegisterAgent([FromBody] AgentInfo agentInfo)
         {
-            if (agentInfo != null)
+            if (agentInfo is not null)
             {
                 _agentPool.Add(agentInfo);
             }
+            else
+            {
+                return BadRequest("Ошибка при регистрации агента");
+            }
+
             return Ok();
         }
 
@@ -36,7 +40,14 @@ namespace MetricWebApi_Manager.Controllers
         public IActionResult EnableAgentById([FromRoute] int agentId)
         {
             if (_agentPool.Agents.ContainsKey(agentId))
+            {
                 _agentPool.Agents[agentId].Enable = true;
+            }
+            else
+            {
+                return BadRequest("Ошибка при изменении статуса агента");
+            }
+
             return Ok();
         }
 
@@ -46,14 +57,23 @@ namespace MetricWebApi_Manager.Controllers
         public IActionResult DisableAgentById([FromRoute] int agentId)
         {
             if (_agentPool.Agents.ContainsKey(agentId))
+            {
                 _agentPool.Agents[agentId].Enable = false;
+            }
+            else
+            {
+                return BadRequest("Ошибка при изменении статуса агента");
+            }
+
             return Ok();
         }
 
         [HttpGet("getall")]
         public IActionResult GetAllAgents()
         {
-            return Ok(_agentPool.Agents.Values.ToArray());
+            AgentInfo[] agents = _agentPool.Agents.Values.ToArray();
+
+            return Ok(agents);
         }
     }
 }

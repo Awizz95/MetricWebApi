@@ -26,7 +26,7 @@ builder.Services.AddHostedService<QuartzHostedService>();
 builder.Services.AddSingleton<ISchedulerFactory, StdSchedulerFactory>();
 builder.Services.AddSingleton<IJobFactory, SingletonJobFactory>();
 
-builder.Services.AddSingleton(new JobSchedule(typeof(CpuMetricJob), "0/5 * * ? * * *"));
+builder.Services.AddSingleton(new JobSchedule(typeof(CpuMetricJob), "0/5 * * ? * * *")); //что это?
 builder.Services.AddSingleton(new JobSchedule(typeof(RAMMetricJob), "0/5 * * ? * * *"));
 builder.Services.AddSingleton<CpuMetricJob>();
 builder.Services.AddSingleton<RAMMetricJob>();
@@ -35,14 +35,14 @@ builder.Services.AddSingleton<IRAMMetricRepository, RAMMetricRepository>();
 
 builder.Services.AddFluentMigratorCore()
                 .ConfigureRunner(rb => rb
-                .AddSQLite()
-                .WithGlobalConnectionString(new DBOptions().connectionString)
-                .ScanIn(Assembly.GetExecutingAssembly()).For.All())
+                    .AddSQLite()
+                    .WithGlobalConnectionString(builder.Configuration.GetConnectionString("Default"))
+                    .ScanIn(Assembly.GetExecutingAssembly()).For.All())
                 .AddLogging(lb => lb
-                .AddFluentMigratorConsole());
+                    .AddFluentMigratorConsole());
 
-var mapperConfiguration = new MapperConfiguration(mp => mp.AddProfile(new MapperProfile()));
-var mapper = mapperConfiguration.CreateMapper();
+MapperConfiguration mapperConfiguration = new MapperConfiguration(mp => mp.AddProfile(new MapperProfile())); 
+IMapper mapper = mapperConfiguration.CreateMapper();
 builder.Services.AddSingleton(mapper);
 
 builder.Services.AddSwaggerGen(c =>

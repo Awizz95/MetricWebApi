@@ -7,8 +7,9 @@ namespace MetricWebApi_Manager.Converters
     {
         public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var value = reader.GetString();
+            string? value = reader.GetString();
             TimeSpan timeSpan = TimeSpan.Parse(value);
+
             return timeSpan;
         }
 

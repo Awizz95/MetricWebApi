@@ -17,8 +17,7 @@ builder.Services.AddHttpClient<IMetricsAgentClient, MetricsAgentClient>()
         sleepDurationProvider: (attemptCount) => TimeSpan.FromMilliseconds(2000)));
 
 builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-                    options.JsonSerializerOptions.Converters.Add(new CustomTimeSpanConverter()));
+    .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new CustomTimeSpanConverter()));
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -28,8 +27,8 @@ builder.Services.AddSwaggerGen(c =>
     {
         Version = "v1",
         Title = "API сервиса сбора метрик",
-        Description = "Здесь можно поиграть с API сервиса сбора метрик от агентов",
-        TermsOfService = new Uri("https://example.com/terms"),
+        Description = "API сервиса сбора метрик от агентов",
+        TermsOfService = new Uri("https://example.com/terms"), //что это
         Contact = new OpenApiContact
         {
             Name = "Alexander Zhukov",
@@ -39,22 +38,17 @@ builder.Services.AddSwaggerGen(c =>
 
         License = new OpenApiLicense
         {
-            Name = "Пример лицензии (empty)",
+            Name = "Пример лицензии",
             Url = new Uri("https://example.com/license"),
         }
     });
 
-    //var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    //var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    //c.IncludeXmlComments(xmlPath);
-
-    c.EnableAnnotations(); //Для работы swagger tag
-
-    c.MapType<TimeSpan>(() => new OpenApiSchema
-    {
-        Type = "string",
-        Example = new OpenApiString("00:00:00")
-    });
+        c.EnableAnnotations(); //Для работы swagger tag
+        c.MapType<TimeSpan>(() => new OpenApiSchema // для корректной сериализации типа
+        {
+            Type = "string",
+            Example = new OpenApiString("00:00:00")
+        });
 });
 
 builder.Services.AddSingleton<AgentPool>();

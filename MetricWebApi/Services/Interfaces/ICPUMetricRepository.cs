@@ -1,4 +1,4 @@
-﻿using MetricWebApi.Models;
+﻿using MetricWebApi_Agent.Models.Metrics;
 
 namespace MetricWebApi.Services.Interfaces
 {

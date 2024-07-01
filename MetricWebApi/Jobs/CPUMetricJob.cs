@@ -1,5 +1,5 @@
-﻿using MetricWebApi.Models;
-using MetricWebApi.Services.Interfaces;
+﻿using MetricWebApi.Services.Interfaces;
+using MetricWebApi_Agent.Models.Metrics;
 using Quartz;
 using System.Diagnostics;
 
@@ -9,7 +9,7 @@ namespace MetricWebApi.Jobs
     {
 
         private readonly ICPUMetricRepository _cpuMetricsRepository;
-        private PerformanceCounter _cpuCounter;
+        private readonly PerformanceCounter _cpuCounter;
 
         public CpuMetricJob(ICPUMetricRepository cpuMetricsRepository)
         {
@@ -21,13 +21,16 @@ namespace MetricWebApi.Jobs
         {
             // Получаем значение занятости CPU
             float cpuUsageInPercents = _cpuCounter.NextValue();
-            var time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
+            TimeSpan time = TimeSpan.FromSeconds(DateTimeOffset.UtcNow.ToUnixTimeSeconds());
 
-            _cpuMetricsRepository.Create(new CPUMetric
+            CPUMetric cpuMetric = new CPUMetric
             {
                 Time = time.TotalSeconds,
                 Value = (int)cpuUsageInPercents
-            });
+            };
+
+            _cpuMetricsRepository.Create(cpuMetric);
+
             return Task.CompletedTask;
         }
     }
