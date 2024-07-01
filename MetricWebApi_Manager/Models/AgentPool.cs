@@ -13,8 +13,9 @@ namespace MetricWebApi_Manager.Models
 
         public void Add(AgentInfo value)
         {
-            if (!allAgents.ContainsKey(value.AgentId))
-                allAgents.Add(value.AgentId, value);
+            if (allAgents.ContainsKey(value.AgentId)) throw new InvalidOperationException("Агент с таким id уже существует");
+
+            allAgents.Add(value.AgentId, value);
         }
 
         public Dictionary<int, AgentInfo> Agents

@@ -6,47 +6,42 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MetricWebApi_Manager.Controllers
 {
-    public class RAMMetricController
+    [Route("api/ram")]
+    [ApiController]
+    public class RAMMetricController : ControllerBase
     {
-        [Route("api/ram")]
-        [ApiController]
-        public class RAMMetricsController : ControllerBase
+        private readonly IMetricsAgentClient _metricsAgentClient;
+
+        public RAMMetricController(IMetricsAgentClient metricsAgentClient)
         {
-            private readonly IMetricsAgentClient _metricsAgentClient;
+            _metricsAgentClient = metricsAgentClient;
+        }
 
-            public RAMMetricsController(IMetricsAgentClient metricsAgentClient)
+        [HttpGet("getRAMMetricsFromAgent")]
+        [ProducesResponseType(typeof(RAMMetricsResponse), StatusCodes.Status200OK)]
+        public IActionResult GetMetricsFromRequest([FromBody] RAMMetricsRequest request)
+        {
+            RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
             {
-                _metricsAgentClient = metricsAgentClient;
-            }
+                AgentId = request.AgentId,
+                FromTime = request.FromTime,
+                ToTime = request.ToTime
+            });
 
-            [HttpGet("getRAMMetricsFromAgent")]
-            [ProducesResponseType(typeof(RAMMetricsResponse), StatusCodes.Status200OK)] 
-            public IActionResult GetMetricsFromRequest([FromBody] RAMMetricsRequest request)
+            return Ok(response);
+        }
+
+        [HttpGet("agent/{agentId}/from/{fromTime}/to/{toTime}")]
+        public IActionResult GetMetricsFromRoute([FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
+        {
+            RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
             {
-                RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
-                {
-                    AgentId = request.AgentId,
-                    FromTime = request.FromTime,
-                    ToTime = request.ToTime
-                });
+                AgentId = agentId,
+                FromTime = fromTime,
+                ToTime = toTime
+            });
 
-                return Ok(response);
-            }
-
-            [HttpGet("agent/{agentId}/from/{fromTime}/to/{toTime}")]
-            public IActionResult GetMetricsFromRoute([FromRoute] int agentId, [FromRoute] TimeSpan fromTime, [FromRoute] TimeSpan toTime)
-            {
-                RAMMetricsResponse response = _metricsAgentClient.GetRAMMetrics(new RAMMetricsRequest()
-                {
-                    AgentId = agentId,
-                    FromTime = fromTime,
-                    ToTime = toTime
-                });
-
-                return Ok(response);
-            }
+            return Ok(response);
         }
     }
 }
-
-

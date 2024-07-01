@@ -4,6 +4,6 @@ namespace MetricWebApi_Manager.Models.Responses
 {
     public class CpuMetricsResponse
     {
-        public int AgentId { get; set; }
+        public List<CPUMetric> Metrics { get; set; }
     }
 }

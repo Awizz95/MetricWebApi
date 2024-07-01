@@ -4,6 +4,7 @@ using MetricWebApi_Manager.Models;
 using MetricWebApi_Manager.Services.Interfaces;
 using Newtonsoft.Json;
 using MetricWebApi_Manager.Models.Responses;
+using MetricWebApi_Manager.Models.Metrics;
 
 namespace MetricWebApi_Manager.Services.Implementations
 {
@@ -31,19 +32,24 @@ namespace MetricWebApi_Manager.Services.Implementations
                 string fromTime = request.FromTime.ToString("dd\\.hh\\:mm\\:ss");
                 string toTime = request.ToTime.ToString("dd\\.hh\\:mm\\:ss");
 
-                string requestQuery = $"{agentAddress}api/metrics/cpu/from/{fromTime}/to/{toTime}";
+                string requestQuery = $"http://{agentAddress}/api/metrics/cpu/from/{fromTime}/to/{toTime}";
 
                 HttpRequestMessage httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, requestQuery);
                 httpRequestMessage.Headers.Add("Accept", "application/json");
-                HttpResponseMessage response = _httpClient.SendAsync(httpRequestMessage).Result;  //отправка запроса агенту
+                HttpResponseMessage responseMsg = _httpClient.SendAsync(httpRequestMessage).Result;  //отправка запроса агенту
 
-                if (response.IsSuccessStatusCode)
+                if (responseMsg.IsSuccessStatusCode)
                 {
-                    string responseStr = response.Content.ReadAsStringAsync().Result;
-                    CpuMetricsResponse cpuMetricsResponse = (CpuMetricsResponse) JsonConvert.DeserializeObject(responseStr, typeof(CpuMetricsResponse));
-                    cpuMetricsResponse.AgentId = request.AgentId;
+                    string json = responseMsg.Content.ReadAsStringAsync().Result;
 
-                    return cpuMetricsResponse;
+                    CpuMetricsResponse metricsFromJson = JsonConvert.DeserializeObject<CpuMetricsResponse>(json);
+
+                    CpuMetricsResponse metricsResponse = new CpuMetricsResponse
+                    {
+                       Metrics = metricsFromJson.Metrics,
+                    };
+                    
+                    return metricsResponse;
                 }
             }
             catch (Exception ex)

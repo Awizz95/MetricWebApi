@@ -1,4 +1,5 @@
 ﻿using MetricWebApi_Manager.Models;
+using MetricWebApi_Manager.Models.Requests;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -20,13 +21,25 @@ namespace MetricWebApi_Manager.Controllers
         [SwaggerOperation(description: "Регистрация нового агента в системе мониторинга")]
         [SwaggerResponse(200, "Успешная операция")]
 
-        public IActionResult RegisterAgent([FromBody] AgentInfo agentInfo)
+        public IActionResult RegisterAgent([FromBody] AgentRequest request)
         {
-            if (agentInfo is not null)
+            int id = default;
+
+            if (_agentPool.Agents.Count == 0) id = 1;
+            else id = _agentPool.Agents.Last().Key +1;
+
+            AgentInfo agentInfo = new AgentInfo()
+            {
+                AgentId = id,
+                AgentAddress = request.AgentAddress,
+                Enable = request.Enable
+            };
+
+            try
             {
                 _agentPool.Add(agentInfo);
             }
-            else
+            catch
             {
                 return BadRequest("Ошибка при регистрации агента");
             }

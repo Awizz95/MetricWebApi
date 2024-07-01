@@ -1,5 +1,6 @@
 ﻿using MetricWebApi.Models;
 using MetricWebApi.Services.Interfaces;
+using MetricWebApi_Agent.Models.Metrics;
 using Quartz;
 using System.Diagnostics;
 

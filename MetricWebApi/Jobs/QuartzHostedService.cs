@@ -16,17 +16,18 @@ namespace MetricWebApi.Jobs
             _jobFactory = jobFactory;
         }
 
-        public IScheduler Scheduler { get; set; }
+        public IScheduler? Scheduler { get; set; }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             Scheduler = await _schedulerFactory.GetScheduler(cancellationToken);
             Scheduler.JobFactory = _jobFactory;
 
-            foreach (var jobSchedule in _jobSchedules)
+            foreach (JobSchedule jobSchedule in _jobSchedules)
             {
-                IJobDetail job = CreateJobDetail(jobSchedule);
+                IJobDetail job = JobBuilder.Create<CpuMetricJob>().Build();
                 ITrigger trigger = CreateTrigger(jobSchedule);
+
                 await Scheduler.ScheduleJob(job, trigger, cancellationToken);
             }
 
@@ -35,25 +36,14 @@ namespace MetricWebApi.Jobs
 
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            await Scheduler?.Shutdown(cancellationToken);
-        }
-
-        private static IJobDetail CreateJobDetail(JobSchedule schedule)
-        {
-            Type jobType = schedule.JobType;
-
-            return JobBuilder
-                .Create(jobType)
-                .WithIdentity(jobType.FullName)
-                .WithDescription(jobType.Name)
-                .Build();
+            await Scheduler.Shutdown(cancellationToken);
         }
 
         private static ITrigger CreateTrigger(JobSchedule schedule)
         {
             return TriggerBuilder
                 .Create()
-                .WithIdentity($"{schedule.JobType.FullName}.trigger")
+                .WithIdentity($"{schedule.JobType.FullName}.trigger") //идентифицируем триггер с именем
                 .WithCronSchedule(schedule.CronExpression)
                 .WithDescription(schedule.CronExpression)
                 .Build();

@@ -19,6 +19,14 @@ namespace MetricWebApi.Jobs
             return job;
         }
 
-        public void ReturnJob(IJob job) { }
+        public void ReturnJob(IJob job)
+        {
+            IDisposable? disposable = job as IDisposable;
+
+            if (disposable != null)
+            {
+                disposable.Dispose();
+            }
+        }
     }
 }

@@ -47,7 +47,7 @@ builder.Services.AddSwaggerGen(c =>
         c.MapType<TimeSpan>(() => new OpenApiSchema // для корректной сериализации типа
         {
             Type = "string",
-            Example = new OpenApiString("00:00:00")
+            Example = new OpenApiString("0:00:00:00")
         });
 });
 
